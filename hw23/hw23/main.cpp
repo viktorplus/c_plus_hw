@@ -204,12 +204,6 @@ int main()
     Account a2("Ігор");
     Account a3{};
 
-    //a1.deposit(500);
-    //a1.print();
-    //a1.withdraw(200);
-    //a1.print();
-    //a1.withdraw(2000); // спроба зняти більше, ніж є
-
     a1.deposit(500).withdraw(200).print();
 
     cout << "Accounts: " << Account::getCount() << endl;
@@ -218,6 +212,13 @@ int main()
 	a1.transfer(a2, 300); // успішний переказ
 	a1.transfer(a1, 100); // переказ самому собі
 	a2.transfer(a1, 2000); // переказ завеликої суми
+
+    a1.print();
+    a2.print();
+    a3.print();
+
+    cout << "Accounts: " << Account::getCount() << endl;
+    cout << "Total: " << Account::getTotalMoney() << " грн" << endl;
 
     return 0;
 }
