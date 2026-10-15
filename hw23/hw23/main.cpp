@@ -144,16 +144,19 @@ public:
 
     int getId() const { return id; }
 
-    void deposit(double amount)
+    Account& deposit(double amount)
     {
         if (amount > 0)
         {
             balance += amount;
             totalMoney += amount;
         }
+		return *this;
+
     }
 
-    void withdraw(double amount) {
+    Account& withdraw(double amount) 
+    {
         if (amount > 0 && amount <= balance) {
             balance -= amount;
             totalMoney -= amount;
@@ -161,6 +164,7 @@ public:
         else {
             cout << "Відмова: недостатньо коштів" << endl;
         }
+		return *this;
     }
 
     void print() const {
@@ -170,6 +174,20 @@ public:
     inline static int getCount() { return count; }
 
     inline static double getTotalMoney() { return totalMoney; }
+
+    bool transfer(Account& to, double amount) {
+		if (this == &to) {
+			cout << "Відмова: переказ самому собі" << endl;
+			return false;
+		}
+		if (amount <= 0 || amount > balance) {
+			cout << "Відмова: некоректна сума" << endl;
+			return false;
+		}
+		to.deposit(amount);
+		this->withdraw(amount);
+		return true;
+    };
 
 };
 
@@ -186,14 +204,20 @@ int main()
     Account a2("Ігор");
     Account a3{};
 
-    a1.deposit(500);
-    a1.print();
-    a1.withdraw(200);
-    a1.print();
-    a1.withdraw(2000); // спроба зняти більше, ніж є
+    //a1.deposit(500);
+    //a1.print();
+    //a1.withdraw(200);
+    //a1.print();
+    //a1.withdraw(2000); // спроба зняти більше, ніж є
+
+    a1.deposit(500).withdraw(200).print();
 
     cout << "Accounts: " << Account::getCount() << endl;
-    cout << "Total: " << Account::getTotalMoney() << endl;
+    cout << "Total: " << Account::getTotalMoney() << "грн" << endl;
+
+	a1.transfer(a2, 300); // успішний переказ
+	a1.transfer(a1, 100); // переказ самому собі
+	a2.transfer(a1, 2000); // переказ завеликої суми
 
     return 0;
 }
