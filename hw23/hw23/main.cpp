@@ -154,9 +154,9 @@ public:
 
     }
 
-    Account& withdraw(double amount) 
+	Account& withdraw(double amount) // Account& тому що ми хочемо повертати посилання на поточний об'єкт, щоб дозволити ланцюжок викликів методів
     {
-        if (amount > 0 && amount <= balance) {
+		if (amount > 0 && amount <= balance) { // перевірка, що сума більша за 0 і не більша за баланс 
             balance -= amount;
             totalMoney -= amount;
         }
@@ -175,7 +175,7 @@ public:
     inline static double getTotalMoney() { return totalMoney; }
 
     bool transfer(Account& to, double amount) {
-		if (this == &to) {
+		if (this == &to) { // перевірка, чи рахунок, на який ми переказуємо, є тим самим рахунком
 			cout << "Відмова: переказ самому собі" << endl;
 			return false;
 		}
@@ -196,43 +196,100 @@ int main()
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
 
+    //как быстро растет-------------------------------------------------------------- -
+
+    //    1. Створіть динамічний масив з n рахунків : new Account[n]; (n введіть з клавіатури).Які конструктори викликались ?
+    //    2. Поповніть кілька рахунків масиву різними сумами.
+    //    3. Знайдіть і виведіть рахунок з найбільшим балансом.
+    //    4. Видаліть масив і переконайтеся, що getCount() і getTotalMoney() повернулися до значень, які були до створення масиву.
+
+
     cout << "Accounts: " << Account::getCount() << endl;
     cout << "Total: " << Account::getTotalMoney() << endl;
 
-    Account a1("Олена", 1000);
-    Account a2("Ігор");
-    Account a3{};
+    Account* accounts = nullptr;
+    size_t  n;
+    cout << "Введіть кількість рахунків: ";
+    cin >> n;
+	n = 3; // для тестування
+    accounts = new Account[n];
+    accounts[0].setOwner("Олена");
+    accounts[0].deposit(1000);
+    accounts[1].setOwner("Олег");
+    accounts[1].deposit(2000);
+    accounts[2].setOwner("Ірина");
+    accounts[2].deposit(3000);
 
-    a1.deposit(500).withdraw(200).print();
+    cout << "Рахунок з найбільшим балансом: " << endl;
+    Account* maxAccount = &accounts[0];
+    for (int i = 1; i < n; i++) {
+        if (accounts[i].getBalance() > maxAccount->getBalance()) {
+            maxAccount = &accounts[i];
+        }
+    }
+    maxAccount->print();
+
+    delete[] accounts;
 
     cout << "Accounts: " << Account::getCount() << endl;
-    cout << "Total: " << Account::getTotalMoney() << "грн" << endl;
-
-	a1.transfer(a2, 300); // успішний переказ
-	a1.transfer(a1, 100); // переказ самому собі
-	a2.transfer(a1, 2000); // переказ завеликої суми
-
-    a1.print();
-    a2.print();
-    a3.print();
-
-    cout << "Accounts: " << Account::getCount() << endl;
-    cout << "Total: " << Account::getTotalMoney() << " грн" << endl;
-
-    return 0;
+    cout << "Total: " << Account::getTotalMoney() << endl;
 }
 
+//    cout << "Accounts: " << Account::getCount() << endl;
+//    cout << "Total: " << Account::getTotalMoney() << endl;
+//
+//    Account a1("Максим", 1000);
+//    Account a2("Святослав");
+//    Account a3{};
+//
+//    a1.deposit(500).withdraw(200).print();
+//
+//    cout << "Accounts: " << Account::getCount() << endl;
+//    cout << "Total: " << Account::getTotalMoney() << "грн" << endl;
+//
+//	a1.transfer(a2, 300); // успішний переказ
+//	a1.transfer(a1, 100); // переказ самому собі
+//	a2.transfer(a1, 2000); // переказ завеликої суми
+//
+//    a1.print();
+//    a2.print();
+//    a3.print();
+//
+//    cout << "Accounts: " << Account::getCount() << endl;
+//    cout << "Total: " << Account::getTotalMoney() << " грн" << endl;
+//
+//    return 0;
+//}
+
 /*
-  ВІДПОВІДІ НА ЧАСТИНУ «ПОЯСНИ»
 
-  1.
+/*
+ВІДПОВІДІ НА ЧАСТИНУ «ПОЯСНИ»
 
-  2.
+1. count і totalMoney статичні, тому що вони спільні для всіх рахунків:
+   зберігають кількість рахунків і загальну суму грошей.
+   balance не статичний, бо кожен рахунок має власний баланс.
 
-  3.
+2. Параметр owner має таке саме ім'я, як і поле класу.
+   this->owner означає поле поточного об'єкта, а owner — параметр.
+   Якщо прибрати this->, звернення буде до параметра замість поля.
+   У нашому коді присвоєння пам'яті параметру owner також спричинить
+   помилку компіляції, оскільки він має тип const char*.
 
-  4.
+3. getCount() — статичний метод, який належить класу.
+   Для його виклику не потрібен об'єкт. Він читає статичне поле count,
+   яке існує ще до створення першого рахунку.
 
-  5.
+4. Якщо прибрати перевірку this == &to, переказ допустимої суми самому
+   собі спочатку поповнить рахунок, а потім зніме ту саму суму.
+   Баланс залишиться незмінним, але метод поверне true.
+   Після успішного переказу totalMoney не змінюється: скільки грошей
+   знімається з одного рахунку, стільки ж додається на інший.
 
+5. deposit повертає Account&, тобто посилання на поточний об'єкт,
+   без створення копії. Це дозволяє будувати ланцюжок викликів:
+   a.deposit(500).withdraw(200).
+   Повернення Account за значенням створило б копію. У цьому класі
+   копія мала б той самий покажчик owner, що може призвести
+   до повторного звільнення тієї самої пам'яті.
 */
