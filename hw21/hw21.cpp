@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <windows.h>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ public:
 
 void BankAccount::init(const char* newOwner)
 {
-    strncpy(owner, newOwner, sizeof(owner) - 1);
+    strncpy_s(owner, newOwner, _TRUNCATE);
     owner[sizeof(owner) - 1] = '\0';
     balance = 0;
 }
@@ -81,13 +82,13 @@ public:
 
 void Book::setTitle(const char* newTitle)
 {
-    strncpy(title, newTitle, sizeof(title) - 1);
+    strncpy_s(title, newTitle, _TRUNCATE);
     title[sizeof(title) - 1] = '\0';
 }
 
 void Book::setAuthor(const char* newAuthor)
 {
-    strncpy(author, newAuthor, sizeof(author) - 1);
+    strncpy_s(author, newAuthor, _TRUNCATE);
     author[sizeof(author) - 1] = '\0';
 }
 
