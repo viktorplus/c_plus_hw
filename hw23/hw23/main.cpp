@@ -240,7 +240,7 @@ int main()
     cout << "Total: " << Account::getTotalMoney() << endl;
 
     Account* accounts = nullptr;
-    size_t  n;
+    size_t  n = 0;
     cout << "Введіть кількість рахунків: ";
     cin >> n;
     accounts = new Account[n];
