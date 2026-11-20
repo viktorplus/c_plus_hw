@@ -76,7 +76,8 @@ using namespace std;
      - інакше перевести гроші і повернути true. У main перевірте всі три випадки: успішний переказ, переказ самому собі, переказ завеликої суми.
 
   ---------------------------------------------------------------
-как быстро растет   ---------------------------------------------------------------
+  РІВЕНЬ 3. Масив рахунків (бонус)
+  ---------------------------------------------------------------
 
   1. Створіть динамічний масив з n рахунків:  new Account[n]; (n введіть з клавіатури). Які конструктори викликались?
   2. Поповніть кілька рахунків масиву різними сумами.
@@ -101,7 +102,7 @@ using namespace std;
 class Account
 {
     inline static int count = 0;            //— скільки рахунків існує ЗАРАЗ;
-    inline static int nextId = 1000;        //— номер для наступного рахунку, починається з 1001;
+    inline static int nextId = 1001;        //— номер для наступного рахунку, починається з 1001;
     inline static double totalMoney = 0;    //— сума грошей на ВСІХ рахунках разом.
 
     char* owner;       //— ім'я власника, динамічний рядок;
@@ -110,7 +111,7 @@ class Account
 
 public:
 
-    Account(const char* owner, double balance) : id(++nextId), owner(nullptr)
+    Account(const char* owner, double balance) : id(nextId++), owner(nullptr)
     {
         setOwner(owner);
         this->balance = (balance > 0) ? balance : 0;
@@ -196,7 +197,38 @@ int main()
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
 
-    //как быстро растет-------------------------------------------------------------- -
+    cout << "Accounts: " << Account::getCount() << endl;
+    cout << "Total: " << Account::getTotalMoney() << endl;
+
+    Account a1("Максим", 1000);
+    Account a2("Святослав");
+    Account a3{};
+
+    a2.deposit(300);
+    a1.withdraw(100);
+    a3.withdraw(50); // спроба зняти більше, ніж є
+
+    a1.print();
+    a2.print();
+    a3.print();
+
+    cout << "Accounts: " << Account::getCount() << endl;
+    cout << "Total: " << Account::getTotalMoney() << " грн" << endl;
+
+    a1.deposit(500).withdraw(200).print();
+
+    a1.transfer(a2, 300); // успішний переказ
+    a1.transfer(a1, 100); // переказ самому собі
+    a2.transfer(a1, 2000); // переказ завеликої суми
+
+    a1.print();
+    a2.print();
+    a3.print();
+
+    cout << "Accounts: " << Account::getCount() << endl;
+    cout << "Total: " << Account::getTotalMoney() << " грн" << endl;
+
+    //РІВЕНЬ 3. Масив рахунків (бонус)-------------------------------------------------------------- -
 
     //    1. Створіть динамічний масив з n рахунків : new Account[n]; (n введіть з клавіатури).Які конструктори викликались ?
     //    2. Поповніть кілька рахунків масиву різними сумами.
@@ -211,57 +243,29 @@ int main()
     size_t  n;
     cout << "Введіть кількість рахунків: ";
     cin >> n;
-	n = 3; // для тестування
     accounts = new Account[n];
-    accounts[0].setOwner("Олена");
-    accounts[0].deposit(1000);
-    accounts[1].setOwner("Олег");
-    accounts[1].deposit(2000);
-    accounts[2].setOwner("Ірина");
-    accounts[2].deposit(3000);
-
-    cout << "Рахунок з найбільшим балансом: " << endl;
-    Account* maxAccount = &accounts[0];
-    for (int i = 1; i < n; i++) {
-        if (accounts[i].getBalance() > maxAccount->getBalance()) {
-            maxAccount = &accounts[i];
-        }
+    for (size_t i = 0; i < n; i++) {
+        accounts[i].deposit((i + 1) * 100.0);
     }
-    maxAccount->print();
+
+    if (n > 0) {
+        cout << "Рахунок з найбільшим балансом: " << endl;
+        Account* maxAccount = &accounts[0];
+        for (int i = 1; i < n; i++) {
+            if (accounts[i].getBalance() > maxAccount->getBalance()) {
+                maxAccount = &accounts[i];
+            }
+        }
+        maxAccount->print();
+    }
 
     delete[] accounts;
 
     cout << "Accounts: " << Account::getCount() << endl;
     cout << "Total: " << Account::getTotalMoney() << endl;
+
+    return 0;
 }
-
-//    cout << "Accounts: " << Account::getCount() << endl;
-//    cout << "Total: " << Account::getTotalMoney() << endl;
-//
-//    Account a1("Максим", 1000);
-//    Account a2("Святослав");
-//    Account a3{};
-//
-//    a1.deposit(500).withdraw(200).print();
-//
-//    cout << "Accounts: " << Account::getCount() << endl;
-//    cout << "Total: " << Account::getTotalMoney() << "грн" << endl;
-//
-//	a1.transfer(a2, 300); // успішний переказ
-//	a1.transfer(a1, 100); // переказ самому собі
-//	a2.transfer(a1, 2000); // переказ завеликої суми
-//
-//    a1.print();
-//    a2.print();
-//    a3.print();
-//
-//    cout << "Accounts: " << Account::getCount() << endl;
-//    cout << "Total: " << Account::getTotalMoney() << " грн" << endl;
-//
-//    return 0;
-//}
-
-/*
 
 /*
 ВІДПОВІДІ НА ЧАСТИНУ «ПОЯСНИ»
@@ -272,9 +276,13 @@ int main()
 
 2. Параметр owner має таке саме ім'я, як і поле класу.
    this->owner означає поле поточного об'єкта, а owner — параметр.
-   Якщо прибрати this->, звернення буде до параметра замість поля.
-   У нашому коді присвоєння пам'яті параметру owner також спричинить
-   помилку компіляції, оскільки він має тип const char*.
+   Якщо прибрати this->, звернення буде до параметра замість поля:
+   усі імена owner у setOwner означатимуть параметр.
+   Тоді delete[] owner звільнить рядок, який передали у метод
+   (чужу пам'ять) — це невизначена поведінка, а поле owner так і
+   залишиться непризначеним. Присвоєння owner = new char[length]
+   скомпілюється (змінюється сам покажчик-параметр), а помилку
+   компіляції дасть strcpy_s: він не може писати в const char*.
 
 3. getCount() — статичний метод, який належить класу.
    Для його виклику не потрібен об'єкт. Він читає статичне поле count,
@@ -292,4 +300,10 @@ int main()
    Повернення Account за значенням створило б копію. У цьому класі
    копія мала б той самий покажчик owner, що може призвести
    до повторного звільнення тієї самої пам'яті.
+
+Рівень 3.1. Які конструктори викликались?
+   Для кожного елемента масиву new Account[n] викликається конструктор
+   за замовчуванням Account(), який делегує головному конструктору
+   Account("Без імені", 0). Тому n разів виводиться
+   [+] Рахунок #... (Без імені).
 */
